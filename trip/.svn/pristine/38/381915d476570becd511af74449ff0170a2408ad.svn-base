@@ -1,0 +1,24 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.util.*, trip.vo.*, trip.dto.*" %>
+
+<%
+    String Pri = request.getParameter("Pri");
+    advertDTO advdto = new advertDTO();
+    advertVO vad = advdto.vip_ad(Integer.parseInt(Pri));
+%>
+	<div id="ad1-1" class="ad1-1"  style="background-image:url(<%= vad.getImageURL() %>);"></div>
+	<div id="ad1-2" class="ad1-2"> <!-- 광고하단 1 -->
+	<table border ="0" style="margin-top:20px; height:20px">
+	<tr>
+		<th style="height:48px; word-break:break-all;" colspan="2"><%= vad.getProductName() %></th>
+	</tr>
+	<tr>
+	<td style="width:166; vertical-align:bottom; text-align: left; padding-top: 10px; padding-left: 20px;">
+		<button class="btn-open-modal">Modal열기</button>
+	</td>
+	<td style="width:154; vertical-align:bottom; text-align: right; padding-top: 10px; padding-right: 20px;">
+		<%= vad.getPrice() %>원
+	</td>
+	</tr>
+	</table>
+	</div>

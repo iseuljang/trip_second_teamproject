@@ -1,0 +1,32 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.util.*" %> 
+<%@ page import="java.io.*" %> 
+<%@ page import="java.net.URLEncoder" %> 
+<%@ page import="com.oreilly.servlet.MultipartRequest" %> 
+<%@ page import="com.oreilly.servlet.multipart.DefaultFileRenamePolicy" %>
+<%@ include file="../include/head.jsp" %> 
+<%
+//-------------------- 값 수령 --------------------
+String uno = request.getParameter("uno");
+String adtitle = request.getParameter("adtitle");
+String startday = request.getParameter("startday");
+String endday = request.getParameter("endday");
+
+// 받아온 값의 유효성 확인
+if(uno == null || adtitle == null
+|| startday == null|| endday == null
+|| uno.equals("") || startday.equals("") 
+|| uno.equals("") || endday.equals("") )
+{
+	%>
+	<script>
+	$(document).ready(function(){
+		
+		alert("유효하지 않은 값입니다.");
+		history.back();
+		return;
+	});
+	</script>
+	<%
+}
+

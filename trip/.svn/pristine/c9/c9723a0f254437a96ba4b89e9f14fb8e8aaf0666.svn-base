@@ -1,0 +1,472 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ include file="../include/head.jsp" %> 
+<link rel="stylesheet" type="text/css" href="../css/masterGonggiwrite.css">
+<%
+//-------------------- 값 수령 --------------------
+String pageno      = request.getParameter("page");
+String category    = request.getParameter("category");
+String subclass    = request.getParameter("subclass");
+String search_type = request.getParameter("search_type");
+String sort_type   = request.getParameter("sort_type");
+String keyword     = request.getParameter("keyword");
+String detail_vip     = request.getParameter("detail_vip");
+
+//페이징 기본설정
+if( category    == null     )  category = "";
+if( subclass    == null     )  subclass = "";
+if( search_type == null     )  search_type = "category";
+if( sort_type   == null     )  sort_type	 = "by_category";
+if( keyword      == null    ) keyword = "";
+if( detail_vip      == null ) detail_vip = "N";
+
+if(pageno        == null || pageno.equals("")) 
+{
+	pageno  = "1";
+}
+
+int curpage = 1;
+try{
+		curpage = Integer.parseInt(pageno);
+}catch(Exception e){  }
+
+//------------------ 게시물 정보 받기 ----------------------
+advertDTO dto = new advertDTO();
+advertVO vo = new advertVO();
+ArrayList<advertVO> adlist = dto.GetADList(curpage, category, subclass, search_type, detail_vip, sort_type, keyword);
+
+//------------------ 페이징 설정 ----------------------
+int total = dto.GetTotal(pageno, category, subclass, search_type, detail_vip, sort_type, keyword);
+int perPage = 20;
+int maxpage = total / perPage;	
+if( total % perPage != 0) maxpage++;
+//--------------------- 접근제어 ------------------
+
+//비로그인시
+if(login == null)
+{
+	%>
+	<script>
+	$(document).ready(function(){
+		
+		alert("로그인이 필요합니다.");
+		if(confirm("로그인 페이지로 이동하시겠습니까?") == true)
+		{
+			document.location = "../user/login.jsp";
+			return;
+		}else
+		{
+			document.location = "../firstmain/lobby.jsp";
+			return;
+		}
+	});
+	</script>
+	<% 
+	return;
+}
+
+//관리자 권한이 없을시
+adminboardDTO adto = new adminboardDTO();
+adminboardVO avo = new adminboardVO();
+
+if(adto.CheckAdmin(login.getUid()) == false)
+{
+	%>
+	<script>
+	$(document).ready(function(){
+		
+		alert("해당 회원은 관리자 권한이 없습니다.");
+		history.back();
+		return;
+	});
+	</script>
+	<% 
+	return;
+}
+
+%>
+	<script>
+	$(document).ready(function(){
+		
+		$(".tr")
+		.mouseover(function(){
+			$(this).css("background-color", "#F0F1EC");
+		})
+		.mouseout(function()
+		{
+			$(this).css("background-color", "");
+		});
+		
+		// 수동으로 전체선택시, 전체선택 버튼이 자동으로 체크되고 
+		// 하나라도 체크가 안 되면, 자동으로 전체선택버튼 체크가 풀림 
+		$(".checkbox1").click(function(){
+			
+			var selAll = $('input:checkbox[name=selAll]');
+			var each_view = $('input:checkbox[name=checkbox1]');
+			var checked_view = $('input:checkbox[name=checkbox1]:checked');
+			
+			if(each_view.length == checked_view.length)  
+			{
+				// **제이쿼리로 찾기 때문에 selAll은 제이쿼리 객체에 담겨져있는 원소임**
+				selAll[0].checked = true;
+			
+			}else 
+			{
+				selAll[0].checked = false;
+			}
+		})
+		
+		
+		// --------------- 카테고리메뉴에 마우스를 올릴시 상위 카테고리 보이기 ---------------
+		$("#category").mouseover(function()
+		{
+			$(this).css("background-color", "lightgray");
+			$("#menu").show()
+			$("#sub_category_table").hide()
+			$("#top_category_table").show()
+		})
+		.mouseleave(function()
+		{	// 마우스 내릴시
+			$(this).css("background-color", "");
+		})
+		
+		// ------------------------------ 상위 카테고리에 마우스 올릴시 효과 ------------------------------
+		$(".top_category").mouseover(function()
+		{
+			$(this).css("background-color", "lightgray");
+			$("#top_category_table").show()	
+		})
+		.mouseleave(function()
+		{	// 마우스 내릴시
+			$(this).css("background-color", "");
+		})
+		
+		
+		
+		
+		// ------------------------------ 카테고리에 마우스 내릴시 ------------------------------
+		$("#menu").mouseleave(function()
+		{
+			$("#menu").hide();
+		})
+		
+		
+		
+	
+	});
+	
+	// ------------- 게시물 전체 체크 버튼 ----------------
+	function select_all(obj)
+	{
+		if($(obj).is(":Checked") == true)
+		{
+			var choose_all = $(obj).is(":Checked");
+			var each_view = $('input:checkbox[name=checkbox1]');
+			
+			$(each_view).each(function(){
+				this.checked = true;
+			
+			});
+		}else if($(obj).is(":Checked") == false)
+		{
+			var choose_all = $(obj);
+			var each_view = $('input:checkbox[name=checkbox1]');
+			
+			$(each_view).each(function(){
+				this.checked = false;
+			
+			});
+		}
+	}
+	// --------------- 상위 카테고리에 마우스를 올릴시 하위 카테고리 보이기 ---------------
+	function on_top_category(obj)
+	{
+		$.ajax({
+			type : "get",
+			url: "subcategory.jsp?category=" + obj,
+			dataType: "html",
+			success : function(result) 
+			{
+				result = result.trim();
+				//alert(result);
+				$("#sub_category_table").html(result);
+			}
+		
+		});
+		
+		$("#sub_category_table").show()
+		
+	}
+	
+	
+	// ------------- 상위 카테고리 클릭 함수 ----------------
+	function click_top_category(obj)
+	{
+		document.location = "masterADindex.jsp?category=" + obj;
+	}
+	
+	// ------------- 상위 카테고리 클릭 함수 ----------------
+	function click_sub_category(obj)
+	{
+		document.location = "masterADindex.jsp?subclass=" + obj;
+	}
+	
+	
+	// --------------- 공지 게시글 선택시 주소설정 함수 -------------------
+	function view(obj)
+	{
+		document.location = 'masterADview.jsp?' + obj;
+	}
+	
+	function DoSearch()
+	{
+		if($("#detail_vip").is(':checked') == true)
+		{
+			detail_vip = $("#detail_vip").val();
+		}
+		
+		document.location = "masterADindex.jsp?category=<%= category  %>&subclass=<%= subclass %>" + "&search_type=" + $("#search_type").val() + "&detail_vip=" + detail_vip + "&sort_type=" + $("#sort_type").val() + "&keyword=" + $("#keyword").val();
+	}
+	
+	function DoSort()
+	{
+		if($("#detail_vip").is(':checked') == true)
+		{
+			detail_vip = $("#detail_vip").val();
+		}
+		
+		document.location = 
+			"masterADindex.jsp?page=<%= pageno %>&category=<%= category %>&subclass=<%= subclass %>" + "&search_type=" + $("#search_type").val() + "&detail_vip=" + detail_vip + "&sort_type=" + $("#sort_type").val() + "&keyword=" + $("#keyword").val();
+	}
+	function regisAD()
+	{
+		document.location = "masterADwrite.jsp"
+	}
+</script>
+<style>
+.tr
+{
+	cursor : hand; cursor : pointer;
+}
+.btn
+{
+	border: 0px; 
+	font-size: 25px;
+	border-radius: 0.2em;
+	cursor: pointer;
+	width: 80px;
+	height: 40px;
+	color: white; 
+	margin-bottom : 20px;
+}
+
+#category
+{
+	cursor:pointer;
+	font-size:40px;
+}
+
+
+
+#top_category_table
+{
+	position : absolute; 
+	font-size:20px;
+	background-color: white;
+	cursor:pointer;
+	display:none;
+	border: 1px solid;
+	width : 260px;
+}
+
+.top_category
+{
+	font-size:20px;
+	cursor:pointer;
+	border: 1px solid;
+}
+
+#sub_category_table
+{
+	position : absolute; 
+	left : 354px; 
+	top : 495px; 
+	display : none;
+	width : 150px;
+	font-size:12px;
+	
+
+}
+.sub_category
+{
+	font-size:15px;
+	cursor:pointer;
+	border: 1px solid;
+}
+
+
+</style>
+<body>
+	<form method="post" name="masterADindex" id="masterADindex" action="masterADview.jsp">
+	<!-- 중간부분입니다 -->
+	<div style="margin-top:100px"></div>
+	<table border="0" width="90%" vertical-align="top">
+		<tr>
+			<td id="td1" style="vertical-align:top; width : 300px;">
+				<div><a href="masterMembercheck.jsp" ><b>회원조회</b></a></div>
+				<hr>
+				<div><a href="masterGonggiwrite.jsp" ><b>공지사항</b></a></div>
+				<hr>
+				<div><a href="masterADindex.jsp" ><b style="color:#1ABC9C">광고 관리</b></a></div>
+				<div id="category">카테고리</div>	
+				<div id="menu">
+					<table border="1" id="sub_category_table">
+						<!-- 이곳에 하위 카테고리가 표시됩니다.  -->
+					</table>
+					<table border="1" id="top_category_table">
+						<tr>
+							<%
+							List<advertVO> top_list = dto.GetCategory();
+							for(advertVO advo : top_list)
+							{
+								%>
+								<tr>
+									<td class="top_category" onmouseover="on_top_category('<%= advo.getCategory() %>');" onclick="click_top_category('<%= advo.getCategory() %>');" id="<%= advo.getCategory() %>"><%= advo.getCategory() %></td>
+								</tr>
+								<%
+							}
+							%>
+						</tr>
+					</table>
+				</div>
+			</td>
+			<td id="td2">
+				<table border="0" width="100%" style="border-collapse: collapse;">
+					<tr>
+						<td colspan="7" align="right">
+							<button type="button" class ="btn" id="write_btn" onclick="regisAD();" style="background-color : #7CADFF; margin-right : 20px; font-size : 15px;">광고 등록</button>
+							<button type="button" class ="btn" id="delete_btn" onclick="batchDel();" style="background-color : #EF4E4E; font-size : 15px;">일괄 삭제</button>
+						</td>
+					</tr>
+					<tr>
+						<td style="height : 50px" colspan="7">
+							<span style="display: inline-block;">
+								<label style="font-size : 15px;">VIP만</label><input type="checkbox" id="detail_vip" name="detail_vip" value="Y" <%= detail_vip.equals("Y") ? "checked" : "" %>>
+								<select id="search_type" name="search_type" style="width: 120px; height: 25px; font-size: 15px; margin-right : 10px;">
+									<option value="category" <%= search_type.equals("category") ? "selected" : "" %>>카테고리</option>
+									<option value="product_name" <%= search_type.equals("product_name") ? "selected" : "" %>>상품명</option>
+									<option value="all" <%= search_type.equals("all") ? "selected" : "" %>>카테고리 + 상품명</option>
+								</select>
+								<input type="text" id="keyword" name="keyword" value="<%= keyword %>">
+								<input type="button" onclick="DoSearch();" id="search"  value="검색" class="search_btn">
+							</span>
+							<span style="display: inline-block; float: right;">
+							정렬 선택
+								<select id="sort_type" name="sort_type" style="width: 100px; height: 25px; font-size: 15px; margin-right : 20px;">
+									<option value="by_category" <%= sort_type.equals("by_category") ? "selected" : "" %>>카테고리순</option>
+									<option value="in_order" <%= sort_type.equals("in_order") ? "selected" : "" %>>가나다순</option>
+									<option value="by_number" <%= sort_type.equals("by_number") ? "selected" : "" %>>최근등록순</option>
+									<option value="by_exposure_frequency" <%= sort_type.equals("by_exposure_frequency") ? "selected" : "" %>>노출 빈도순</option>
+								</select>
+								<input type="button" onclick="DoSort();" id="sort"  value="정렬하기" class="sort_btn">
+							</span>
+						</td>
+					</tr>
+					<tr class="top_tr" id="tr_top">
+						<th style="text-align : left; width : 60px;">
+							<input type="checkbox" id="selAll" name="selAll" onclick="select_all(this);">&nbsp;전체 선택 
+						</th>
+						<th style="width : 30px;">번호</th>
+						<th style="width : 70px;">카테고리</th>
+						<th style="width : 100px;">상세 카테고리</th>
+						<th style="width : 400px;">상품명</th>
+						<th style="width : 50px;">VIP여부</th>
+						<th style="width : 100px;">가격</th>
+					</tr>
+						<%
+						int seqNo = total -((curpage - 1) * 20);
+						for(advertVO advo : adlist)
+						{
+							String link_str = "";
+							link_str += "page="+ pageno;
+							link_str += "&category="+ category;
+							link_str += "&subclass="+ subclass;
+							link_str += "&search_type="+ search_type;
+							link_str += "&keyword="+ keyword;
+							link_str += "&detail_vip="+ detail_vip;
+							link_str += "&sort_type="+ sort_type;
+							link_str += "&advertno=" + advo.getAdvertno();
+							%>
+							<tr class="tr" id="repeat_tr" style="font-size : 20px">
+								<td>
+									<input type="checkbox" name="checkbox1"  class="checkbox1" value="<%= advo.getAdvertno() %>">
+								</td>
+								<td style="font-size : 15px;" onclick="view('<%= link_str %>');"><%= seqNo -- %></td>
+								<td style="font-size : 15px;" onclick="view('<%= link_str %>');"><%= advo.getCategory() %></td>
+								<td style="font-size : 15px;" onclick="view('<%= link_str %>');"><%= advo.getSubclass() %></td>
+								<td style="font-size : 15px;" onclick="view('<%= link_str %>');"><%= advo.getProductName() %></td>
+								<%
+									String vipWhether = "";
+								
+									if(advo.getVipWhether().equals("0"))
+									{
+										vipWhether = "N";
+									}else if(advo.getVipWhether().equals("1"))
+									{
+										vipWhether = "Y";
+									}
+								%>
+								<td style="font-size : 15px;" onclick="view('<%= link_str %>');"><%= vipWhether %></td>
+								<td style="font-size : 15px;" onclick="view('<%= link_str %>');"><%= advo.getPrice() %>원</td>
+							</tr>
+							<% 
+						}
+						%>
+				</table>
+			</td>
+		</tr>
+		<tr>
+			<td>
+			<td style="font-size: 25px; text-align:center; padding left : 300px; border : 0;" >
+			<%
+			// **페이징 시작블럭번호와 끌블럭 번호를 계산 
+			int startBlock = ((curpage - 1) / 10) * 10 + 1; // -> ex) 1,  11, 21 ,31
+			int endBlock = startBlock + 9;					// -> ex) 10, 20, 30 ,40
+			
+			// endBlock이 최대 페이지 번호보다 크면 안됨
+			if( endBlock > maxpage)
+			{
+				endBlock = maxpage;
+			}	
+
+			//이전 페이지 블럭을 표시한다.
+			if(startBlock != 1)
+			{
+				%><a href="masterADindex.jsp?page=<%= startBlock - 1 %>&category=<%= category %>&subclass=<%= subclass %>&search_type=<%= search_type %>&sort_type=<%= sort_type %>&keyword=<%= keyword %>">◀</a>&nbsp;<%
+			}	
+			
+			//화면에 블럭 페이징을 표시한다.
+			for(int pno = startBlock ; pno <= endBlock; pno++)
+			{
+				if( curpage == pno)
+				{
+					//현재 페이지 이면....
+					%><a href="masterADindex.jsp?page=<%= pno %>&category=<%= category %>&subclass=<%= subclass %>&search_type=<%= search_type %>&sort_type=<%= sort_type %>&keyword=<%= keyword %>"><b style="color:red;">&nbsp;&nbsp;&nbsp;(<%= pno %>)</b></a>&nbsp;<%
+				}else
+				{
+					%><a href="masterADindex.jsp?page=<%= pno %>&category=<%= category %>&subclass=<%= subclass %>&search_type=<%= search_type %>&sort_type=<%= sort_type %>&keyword=<%= keyword %>">&nbsp;&nbsp;&nbsp;<%= pno %></a>&nbsp;<%	
+				}
+			}
+			
+			//다음 페이지 블럭을 표시한다.
+			if(endBlock < maxpage)
+			{
+				%><a href="masterADindex.jsp?page=<%= endBlock + 1 %>&category=<%= category %>&subclass=<%= subclass %>&search_type=<%= search_type %>&sort_type=<%= sort_type %>&keyword=<%= keyword %>">▶</a>&nbsp;<%
+			}
+			%>
+			</td>
+		</tr>
+	</table>
+	<div style="height : 400px;"> </div>
+	</form>
+</body>
+</html>

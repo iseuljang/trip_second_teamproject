@@ -1,0 +1,76 @@
+package trip.dto;
+import trip.dao.*;
+import trip.vo.*;
+import java.util.*;
+import java.io.*;
+import java.text.*;
+
+public class ad_exposureDTO extends DBManager 
+{
+	// 테이블에 노출 정보를 집어넣는 메소드
+	public boolean Insert(ad_exposureVO vo)
+	{
+		
+		
+		Date today = new Date();
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String Stoday = dateFormat.format(today);
+		
+		if( this.DBOpen() == false )
+		{
+			return false;
+		}
+		
+		String sql = "";
+		sql += "insert into ad_exposure (advertno, bno, exposure_date) ";
+		sql += "values ( ";
+		sql += "'" + vo.getAdvertno() + "', ";
+		sql += "'" + vo.getBno() + "', ";
+		sql += "'" + Stoday + "' )";
+		this.RunSQL(sql);
+		
+		this.DBClose();
+		return true;
+		
+	}
+	// 노출된 광고에 대한 정보을 받는 메소드
+	public ad_exposureVO GetExposure_info(String advertno, String bno)
+	{
+		 
+		
+		Date today = new Date();
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String Stoday = dateFormat.format(today);
+		
+		if( this.DBOpen() == false )
+		{
+			return null;
+		}
+		
+		String sql = "";
+		sql += "select * from ad ";
+		sql += "where advertno = " + advertno;
+		this.OpenQuery(sql);
+		
+		ad_exposureVO vo = new ad_exposureVO();
+		
+		while(this.GetNext() == true)
+		{
+			vo.setExno(this.GetValue("exno"));
+			vo.setAdvertno(advertno);
+			vo.setExposure_date(Stoday);
+		}
+		
+//		sql  = "select * from board ";
+//		sql += "where bno = " + bno;
+//		this.OpenQuery(sql);
+//		while(this.GetNext() == true)
+//		{
+//			vo.setBno(bno);
+//		}
+		
+		this.DBClose();
+		return vo;
+		
+	}
+}
