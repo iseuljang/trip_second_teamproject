@@ -6,6 +6,7 @@
   - [개발기간](#개발기간)
   - [팀 구성](#팀-구성)
   - [개발환경](#개발환경)
+  - [분석](#분석)
   - [담당한 기능](#담당한-기능)
   - [트러블 슈팅](#트러블-슈팅)
   - [개선할 부분](#개선할-부분)
@@ -27,7 +28,57 @@
   + JDK 18.0.2.1, ERMaster, StarUML v6.1.0
   + Python(pandas, numpy,konlpy 등등)
   + 인공지능스킬(tensorflow 기반 긍부정 분석, gensim 기반 유사도 분석, 한글 형태소 분석, 웹크롤링)
+<br><br>
 
+📊분석
+-
+  ## 1. 분석 목적
+  
+  - 목적
+      - 게시글을 분석하여 긍정적인 문장에서 빈도수가 높은 단어를 기반으로 유사한 광고를 매칭
+      - 게시글의 지역을 분류하여 해당 지역의 맛집을 매칭
+  
+  ## 2. 분석 과정
+  
+  - 분석 도구
+      - MySQL, Python (pandas, numpy, konlpy, tensorflow, gensim 등)
+  - 활용 데이터
+      - 네이버 쇼핑 리뷰 200,000개
+      - 쿠팡 쇼핑 리뷰 92,559개
+      - 쿠팡 상품 1,245개
+      - 블로그 여행 게시글 2200여개
+  - 분석 방법
+      - 네이버 쇼핑 리뷰의 평점을 기준으로 4, 5점은 긍정 리뷰, 1, 2점은 부정 리뷰로 분류하여 학습
+      - 정규표현식을 사용해 한글 이외의 문자를 제거하고, 불용어를 지정하여 불필요한 토큰 제거
+      - 네이버 쇼핑 리뷰의 최대 길이를 확인하여 전체 문장을 동일한 길이로 패딩 처리
+      - 네이버 쇼핑 리뷰에서 긍정 및 부정 문장의 빈도수가 높은 키워드로 워드클라우드 생성
+      - 긍정 및 부정 리뷰의 문장 길이를 히스토그램으로 시각화
+      - 쿠팡 쇼핑 리뷰를 Word2Vec으로 분석하여 유사 단어 추출
+      - 게시글을 문장 단위로 분할하여 긍부정 분석을 하고, 긍정 문장에서 빈도수가 높은 단어를 추출
+      - 빈도수가 높은 단어를 유사도 학습 모델에 적용하여 유사 단어를 추출
+      - 유사 키워드를 바탕으로 상품 카테고리에서 해당 상품을 게시글 광고 상품으로 등록
+      - 게시글에서 추출된 단어가 없을 경우 VIP 상품으로 등록된 광고를 보여줌
+      - 전국 지명 데이터를 사용하여 머신러닝으로 학습한 후, 게시글의 지역을 분류하고 맛집을 매칭
+  
+  ## 3.분석 결과
+  
+  - 네이버 쇼핑 리뷰에서 긍정 및 부정 문장의 빈도수가 높은 키워드로 워드클라우드 생성
+    - 긍정문장단어
+      ![wc_mecab_ns_positive.png](https://github.com/iseuljang/trip_second_teamproject/blob/master/wc_mecab_ns_positive.png)
+    - 부정문장단어
+      ![wc_mecab_ns_negative.png](https://github.com/iseuljang/trip_second_teamproject/blob/master/wc_mecab_ns_negative.png)
+          
+  - 긍정 및 부정 리뷰의 문장 길이를 히스토그램으로 생성
+      - 긍정 리뷰보다 부정 리뷰의 길이가 긴 경향 
+        ![s_positive_negetive_reviews.png](https://github.com/iseuljang/trip_second_teamproject/blob/master/s_positive_negetive_reviews.png)
+      
+  - 네이버 쇼핑 리뷰를 tensorflow로 학습하여 문장 긍부정 분석   
+    ![문장긍부정분석.jpg](https://github.com/iseuljang/trip_second_teamproject/blob/master/%EB%AC%B8%EC%9E%A5%EA%B8%8D%EB%B6%80%EC%A0%95%EB%B6%84%EC%84%9D.jpg)
+      
+  - 쿠팡 쇼핑 리뷰를 Word2Vec로 분석하여 유사 단어 도출
+    ![유사단어.jpg](https://github.com/iseuljang/trip_second_teamproject/blob/master/%EC%9C%A0%EC%82%AC%EB%8B%A8%EC%96%B4.jpg)
+
+<br><br>
 
 🖥담당한 기능
 -
@@ -54,11 +105,8 @@
         - 불용어를 지정하여 불필요한 토큰 제거
         - 리뷰의 최대 길이를 확인하여 전체 문장을 동일한 길이로 패딩 처리
     - 데이터 분석
-        - 게시글을 문장 단위로 나누어 tensorflow와 keras를 사용하여 긍부정 분석        
-         ![문장긍부정분석.jpg](https://github.com/iseuljang/trip_second_teamproject/blob/master/%EB%AC%B8%EC%9E%A5%EA%B8%8D%EB%B6%80%EC%A0%95%EB%B6%84%EC%84%9D.jpg)
-
-        - 쿠팡 쇼핑 리뷰를 gensim Word2Vec으로 분석하여 단어 간 유사도 학습         
-         ![유사단어.jpg](https://github.com/iseuljang/trip_second_teamproject/blob/master/%EC%9C%A0%EC%82%AC%EB%8B%A8%EC%96%B4.jpg)
+        - 게시글을 문장 단위로 나누어 tensorflow와 keras를 사용하여 긍부정 분석
+        - 쿠팡 쇼핑 리뷰를 gensim Word2Vec으로 분석하여 단어 간 유사도 학습          
 
     - 데이터 저장
         - 긍정문장과 긍정비율을 DB에 저장
@@ -67,15 +115,11 @@
         - 게시글에 저장된 단어를 유사도 학습 모델로 유사 단어와 유사도를 도출하여 DB에 저장
     - 데이터 시각화
         - 게시글 하단에 상품이 출력되는 부분에서 게시글 키워드로 도출된 광고가 있을 경우 해당 광고가 1번, 2번 칸에 보여지고, 없을 경우 VIP 브랜드의 광고를 우선순위에 따라 보여지도록 구현
-        - 네이버 쇼핑 리뷰에서 긍정 및 부정 문장의 빈도수가 높은 키워드로 워드클라우드 생성<br>
-          긍정문장단어
-        ![wc_mecab_ns_positive.png](https://github.com/iseuljang/trip_second_teamproject/blob/master/wc_mecab_ns_positive.png)
-          부정문장단어
-        ![wc_mecab_ns_negative.png](https://github.com/iseuljang/trip_second_teamproject/blob/master/wc_mecab_ns_negative.png)
+        - 네이버 쇼핑 리뷰에서 긍정 및 부정 문장의 빈도수가 높은 키워드로 워드클라우드 생성          
         - 긍정 및 부정 리뷰의 문장 길이를 히스토그램으로 시각화
-        ![s_positive_negetive_reviews.png](https://github.com/iseuljang/trip_second_teamproject/blob/master/s_positive_negetive_reviews.png)
+        
 
-
+<br>
 
 💡트러블 슈팅
 -
