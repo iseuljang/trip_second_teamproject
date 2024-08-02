@@ -2,7 +2,13 @@
 -
 게시글을 분석하여 게시글 긍정문장에서 키워드를 추출하고 유사단어로 광고 매칭
 
-[완성된 웹 애플리케이션 보기](http://jjezen.cafe24.com/bteam_2nd)
+<br>
+
+🔗 완성된 웹 애플리케이션 보기
+-
+[http://jjezen.cafe24.com/bteam_2nd](http://jjezen.cafe24.com/bteam_2nd)
+
+<br>
 
 ## 목차
   - [개발기간](#개발기간)
