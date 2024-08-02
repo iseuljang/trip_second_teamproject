@@ -6,7 +6,7 @@
 
 🔗 완성된 웹 애플리케이션 보기
 -
-[http://jjezen.cafe24.com/bteam_2nd](http://jjezen.cafe24.com/bteam_2nd)
+<a href="http://jjezen.cafe24.com/bteam_2nd" target="_blank"> http://jjezen.cafe24.com/bteam_2nd </a>
 
 <br>
 
